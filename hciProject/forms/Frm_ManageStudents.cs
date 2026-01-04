@@ -89,7 +89,30 @@ namespace hciProject
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            // كود البحث لو حابب تفعله
+            try
+            {
+                DBHelper db = new DBHelper();
+                string searchText = txtSearch.Text.Trim(); // النص اللي كتبته
+
+                if (string.IsNullOrEmpty(searchText))
+                {
+                    LoadStudents();
+                    return;
+                }
+
+                string sql = $@"SELECT S.StudentID, S.FullName, S.Department, S.CurrentLevel, U.Username 
+                        FROM Students S 
+                        LEFT JOIN Users U ON U.LinkedStudentID = S.StudentID
+                        WHERE S.FullName LIKE '%{searchText}%' 
+                           OR U.Username LIKE '%{searchText}%'";
+
+                DataTable dt = db.ExecuteQuery(sql);
+                dgvStudents.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error searching: " + ex.Message);
+            }
         }
     }
 }
