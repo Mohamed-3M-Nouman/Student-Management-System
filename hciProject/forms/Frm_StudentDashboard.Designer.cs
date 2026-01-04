@@ -89,6 +89,7 @@
             Margin = new Padding(3, 2, 3, 2);
             Name = "Frm_StudentDashboard";
             Text = "Student Dashboard";
+            FormClosed += Frm_StudentDashboard_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }

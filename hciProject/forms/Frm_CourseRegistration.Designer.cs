@@ -32,9 +32,9 @@
             cmbYear = new ComboBox();
             lblSemester = new Label();
             cmbSemester = new ComboBox();
-            dgvAvailableCourses = new DataGridView();
+            dgvCourses = new DataGridView();
             btnConfirm = new Button();
-            ((System.ComponentModel.ISupportInitialize)dgvAvailableCourses).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dgvCourses).BeginInit();
             SuspendLayout();
             // 
             // lblYear
@@ -65,7 +65,6 @@
             lblSemester.Size = new Size(55, 15);
             lblSemester.TabIndex = 2;
             lblSemester.Text = "Semester";
-            lblSemester.Click += lblSemester_Click;
             // 
             // cmbSemester
             // 
@@ -77,19 +76,18 @@
             cmbSemester.Size = new Size(133, 23);
             cmbSemester.TabIndex = 3;
             cmbSemester.SelectedIndexChanged += cmbSemester_SelectedIndexChanged;
-            cmbSemester.Click += lblSemester_Click;
             // 
-            // dgvAvailableCourses
+            // dgvCourses
             // 
-            dgvAvailableCourses.AccessibleName = "";
-            dgvAvailableCourses.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvAvailableCourses.Location = new Point(207, 122);
-            dgvAvailableCourses.Margin = new Padding(3, 2, 3, 2);
-            dgvAvailableCourses.Name = "dgvAvailableCourses";
-            dgvAvailableCourses.RowHeadersWidth = 51;
-            dgvAvailableCourses.Size = new Size(365, 217);
-            dgvAvailableCourses.TabIndex = 4;
-            dgvAvailableCourses.CellContentClick += dgvAvailableCourses_CellContentClick;
+            dgvCourses.AccessibleName = "";
+            dgvCourses.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvCourses.Location = new Point(207, 122);
+            dgvCourses.Margin = new Padding(3, 2, 3, 2);
+            dgvCourses.Name = "dgvCourses";
+            dgvCourses.RowHeadersWidth = 51;
+            dgvCourses.Size = new Size(365, 217);
+            dgvCourses.TabIndex = 4;
+            dgvCourses.CellContentClick += dgvAvailableCourses_CellContentClick;
             // 
             // btnConfirm
             // 
@@ -108,7 +106,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(700, 438);
             Controls.Add(btnConfirm);
-            Controls.Add(dgvAvailableCourses);
+            Controls.Add(dgvCourses);
             Controls.Add(cmbSemester);
             Controls.Add(lblSemester);
             Controls.Add(cmbYear);
@@ -117,7 +115,7 @@
             Name = "Frm_CourseRegistration";
             Text = "Course Registration";
             Load += Frm_CourseRegistration_Load;
-            ((System.ComponentModel.ISupportInitialize)dgvAvailableCourses).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dgvCourses).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -128,7 +126,7 @@
         private ComboBox cmbYear;
         private Label lblSemester;
         private ComboBox cmbSemester;
-        private DataGridView dgvAvailableCourses;
+        private DataGridView dgvCourses;
         private Button btnConfirm;
     }
 }

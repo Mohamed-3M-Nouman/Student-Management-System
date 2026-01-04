@@ -36,11 +36,12 @@
             // dgvTranscript
             // 
             dgvTranscript.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvTranscript.Location = new Point(227, 62);
+            dgvTranscript.Location = new Point(199, 46);
+            dgvTranscript.Margin = new Padding(3, 2, 3, 2);
             dgvTranscript.Name = "dgvTranscript";
             dgvTranscript.ReadOnly = true;
             dgvTranscript.RowHeadersWidth = 51;
-            dgvTranscript.Size = new Size(300, 188);
+            dgvTranscript.Size = new Size(432, 171);
             dgvTranscript.TabIndex = 0;
             dgvTranscript.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -48,19 +49,20 @@
             // 
             lblTotalGPA.AutoSize = true;
             lblTotalGPA.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblTotalGPA.Location = new Point(297, 292);
+            lblTotalGPA.Location = new Point(260, 219);
             lblTotalGPA.Name = "lblTotalGPA";
-            lblTotalGPA.Size = new Size(124, 31);
+            lblTotalGPA.Size = new Size(103, 25);
             lblTotalGPA.TabIndex = 1;
             lblTotalGPA.Text = "Total GPA:";
             // 
             // Frm_Transcript
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(700, 338);
             Controls.Add(lblTotalGPA);
             Controls.Add(dgvTranscript);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "Frm_Transcript";
             Text = "Transcript";
             ((System.ComponentModel.ISupportInitialize)dgvTranscript).EndInit();

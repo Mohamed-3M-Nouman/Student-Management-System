@@ -45,5 +45,10 @@ namespace hciProject
 
             this.Close();
         }
+
+        private void Frm_AdminDashboard_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }

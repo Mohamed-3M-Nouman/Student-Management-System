@@ -39,51 +39,56 @@
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblWelcome.ForeColor = Color.DarkRed;
-            lblWelcome.Location = new Point(291, 35);
+            lblWelcome.Location = new Point(255, 26);
             lblWelcome.Name = "lblWelcome";
-            lblWelcome.Size = new Size(191, 31);
+            lblWelcome.Size = new Size(157, 25);
             lblWelcome.TabIndex = 0;
             lblWelcome.Text = "Welcome Admin";
             // 
             // btnManageStudents
             // 
-            btnManageStudents.Location = new Point(175, 160);
+            btnManageStudents.Location = new Point(153, 120);
+            btnManageStudents.Margin = new Padding(3, 2, 3, 2);
             btnManageStudents.Name = "btnManageStudents";
-            btnManageStudents.Size = new Size(168, 77);
+            btnManageStudents.Size = new Size(147, 58);
             btnManageStudents.TabIndex = 1;
             btnManageStudents.Text = "Manage Students";
             btnManageStudents.UseVisualStyleBackColor = true;
             // 
             // btnGrading
             // 
-            btnGrading.Location = new Point(450, 160);
+            btnGrading.Location = new Point(394, 120);
+            btnGrading.Margin = new Padding(3, 2, 3, 2);
             btnGrading.Name = "btnGrading";
-            btnGrading.Size = new Size(168, 77);
+            btnGrading.Size = new Size(147, 58);
             btnGrading.TabIndex = 2;
             btnGrading.Text = "Grading";
             btnGrading.UseVisualStyleBackColor = true;
             // 
             // btnLogout
             // 
-            btnLogout.Location = new Point(346, 323);
+            btnLogout.Location = new Point(303, 242);
+            btnLogout.Margin = new Padding(3, 2, 3, 2);
             btnLogout.Name = "btnLogout";
-            btnLogout.Size = new Size(108, 38);
+            btnLogout.Size = new Size(94, 28);
             btnLogout.TabIndex = 3;
             btnLogout.Text = "Logout";
             btnLogout.UseVisualStyleBackColor = true;
             // 
             // Frm_AdminDashboard
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(700, 338);
             Controls.Add(btnLogout);
             Controls.Add(btnGrading);
             Controls.Add(btnManageStudents);
             Controls.Add(lblWelcome);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "Frm_AdminDashboard";
             Text = "Admin Dashboard";
-            Load += this.Frm_AdminDashboard_Load;
+            FormClosed += Frm_AdminDashboard_FormClosed;
+            Load += Frm_AdminDashboard_Load;
             ResumeLayout(false);
             PerformLayout();
         }

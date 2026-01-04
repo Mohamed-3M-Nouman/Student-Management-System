@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Windows.Forms;
-using hciProject.Data; // تأكد إن ده المسار الصح لملف DBHelper
+using hciProject.Data;
 
 namespace hciProject
 {
@@ -12,108 +12,102 @@ namespace hciProject
             InitializeComponent();
         }
 
-        // 1. حدث تحميل الصفحة
         private void Frm_CourseRegistration_Load(object sender, EventArgs e)
         {
-            SetupComboBoxes();
+            // 1. تجهيز الجدول أولاً (عشان نتجنب خطأ الأعمدة)
             SetupDataGridView();
-            // مش بننادي LoadCourses هنا لأن تغيير الكومبو بوكس هيناديها لوحده
+
+            // 2. تجهيز القوائم واختيار سنة الطالب أوتوماتيك
+            SetupComboBoxes();
         }
 
-        // 2. دالة تجهيز القوائم (السنوات والترمين)
-        private void SetupComboBoxes()
-        {
-            // أ) تجهيز قائمة الترمات
-            cmbSemester.Items.Clear();
-            cmbSemester.Items.Add("First");
-            cmbSemester.Items.Add("Second");
-            cmbSemester.SelectedIndex = 0; // نختار الأول افتراضياً
-
-            // ب) تجهيز قائمة السنوات (بناءً على مستوى الطالب)
-            cmbYear.Items.Clear();
-
-            DBHelper db = new DBHelper();
-            // نجيب مستوى الطالب الحالي
-            string sql = $"SELECT CurrentLevel FROM Students WHERE StudentID = {ProgramSession.StudentId}";
-            DataTable dt = db.ExecuteQuery(sql);
-
-            int studentCurrentLevel = 1; // الافتراضي
-            if (dt.Rows.Count > 0 && dt.Rows[0]["CurrentLevel"] != DBNull.Value)
-            {
-                studentCurrentLevel = Convert.ToInt32(dt.Rows[0]["CurrentLevel"]);
-            }
-
-            // اللوب الذكي: نعرض سنين من 1 لحد مستوى الطالب بس
-            for (int i = 1; i <= studentCurrentLevel; i++)
-            {
-                cmbYear.Items.Add(i.ToString());
-            }
-
-            // نختار آخر سنة هو وصلها
-            if (cmbYear.Items.Count > 0)
-            {
-                cmbYear.SelectedIndex = cmbYear.Items.Count - 1;
-            }
-        }
-
-        // 3. دالة تصميم الجدول
         private void SetupDataGridView()
         {
-            dgvAvailableCourses.Columns.Clear();
-            dgvAvailableCourses.AutoGenerateColumns = false;
+            // إضافة أعمدة للجدول لو مش موجودة
+            dgvCourses.Columns.Clear();
 
-            // عمود الاختيار
-            DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
-            checkColumn.HeaderText = "Select";
-            checkColumn.Name = "colSelect";
-            checkColumn.Width = 50;
-            dgvAvailableCourses.Columns.Add(checkColumn);
+            DataGridViewCheckBoxColumn checkCol = new DataGridViewCheckBoxColumn();
+            checkCol.Name = "Select";
+            checkCol.HeaderText = "Select";
+            checkCol.Width = 50;
+            dgvCourses.Columns.Add(checkCol);
 
-            // باقي الأعمدة
-            dgvAvailableCourses.Columns.Add("colCourseName", "Course Name");
-            dgvAvailableCourses.Columns.Add("colHours", "Credits");
+            dgvCourses.Columns.Add("CourseID", "ID");
+            dgvCourses.Columns.Add("CourseName", "Subject");
+            dgvCourses.Columns.Add("CreditHours", "Credit Hours");
+            dgvCourses.Columns.Add("Instructor", "Instructor");
 
-            // عمود مخفي للـ ID
-            dgvAvailableCourses.Columns.Add("colCourseID", "ID");
-            dgvAvailableCourses.Columns["colCourseID"].Visible = false;
-
-            dgvAvailableCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvAvailableCourses.AllowUserToAddRows = false;
+            dgvCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvCourses.AllowUserToAddRows = false; // منع صفوف إضافية فاضية
         }
 
-        // 4. دالة تحميل المواد (بناءً على الفلتر)
-        private void LoadCourses()
+        private void SetupComboBoxes()
         {
+            // أ) ملء السنوات
+            cmbYear.Items.Clear();
+            cmbYear.Items.AddRange(new object[] { "1", "2", "3", "4" });
+
+            // ب) ملء الترمات
+            cmbSemester.Items.Clear();
+            cmbSemester.Items.AddRange(new object[] { "First", "Second" });
+
+            // ج) تحديد سنة الطالب تلقائياً من الداتا بيز
             try
             {
-                // لو القوائم لسه فاضية نخرج عشان ميعملش ايرور
-                if (cmbYear.Text == "" || cmbSemester.Text == "") return;
-
-                int semesterId = (cmbSemester.Text == "Second") ? 2 : 1;
-
-                // هنا بنعتبر إن اللي مكتوب في الكومبو بوكس هو "مستوى المادة" (1, 2, 3..)
-                int selectedYearLevel = 1;
-                int.TryParse(cmbYear.Text, out selectedYearLevel);
-
                 DBHelper db = new DBHelper();
+                int studentId = ProgramSession.StudentId; // رقم الطالب المسجل دخول
 
-                // الشرط: هات المواد بتاعة الترم ده AND السنة الدراسية دي
-                string query = $@"SELECT CourseID, CourseName, CreditHours 
-                                  FROM Courses 
-                                  WHERE DefaultSemester = {semesterId} 
-                                  AND YearLevel = {selectedYearLevel}";
+                string sql = $"SELECT CurrentLevel FROM Students WHERE StudentID = {studentId}";
+                DataTable dt = db.ExecuteQuery(sql);
 
-                DataTable dt = db.ExecuteQuery(query);
+                if (dt.Rows.Count > 0)
+                {
+                    string currentLevel = dt.Rows[0]["CurrentLevel"].ToString();
+                    cmbYear.Text = currentLevel; // اختيار السنة بتاعته
+                }
+                else
+                {
+                    cmbYear.SelectedIndex = 0; // لو حصل خطأ اختار أول سنة
+                }
 
-                dgvAvailableCourses.Rows.Clear();
+                // اختيار الترم الأول افتراضياً
+                cmbSemester.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error fetching student level: " + ex.Message);
+            }
+        }
+
+        // الدالة دي بتشتغل لما نغير السنة أو الترم
+        private void LoadCourses()
+        {
+            // لو لسه مفيش اختيار، اخرج
+            if (cmbYear.SelectedIndex == -1 || cmbSemester.SelectedIndex == -1) return;
+
+            try
+            {
+                DBHelper db = new DBHelper();
+                string year = cmbYear.Text;
+                string semester = cmbSemester.Text;
+
+                // هات المواد المناسبة للسنة والترم ده
+                string sql = $@"SELECT CourseID, CourseName, CreditHours, Instructor 
+                                FROM Courses 
+                                WHERE AcademicYear = {year} AND Semester = '{semester}'";
+
+                DataTable dt = db.ExecuteQuery(sql);
+
+                dgvCourses.Rows.Clear(); // فضي الجدول القديم
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    dgvAvailableCourses.Rows.Add(
-                        false,
+                    dgvCourses.Rows.Add(
+                        false, // الـ Checkbox فاضي في الأول
+                        row["CourseID"],
                         row["CourseName"],
                         row["CreditHours"],
-                        row["CourseID"]
+                        row["Instructor"]
                     );
                 }
             }
@@ -123,68 +117,61 @@ namespace hciProject
             }
         }
 
-        // 5. أحداث تغيير الاختيار (عشان يحدث الجدول)
-        private void cmbSemester_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            LoadCourses();
-        }
-
+        // الأحداث (Events)
         private void cmbYear_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadCourses();
         }
 
-        // 6. زرار الحفظ
+        private void cmbSemester_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadCourses();
+        }
+
+        // زر التأكيد (الحفظ)
         private void btnConfirm_Click(object sender, EventArgs e)
         {
-            DBHelper db = new DBHelper();
-            int successCount = 0;
-            string currentAcademicYear = "2025-2026";
-
-            foreach (DataGridViewRow row in dgvAvailableCourses.Rows)
+            try
             {
-                if (row.Cells["colSelect"].Value != null && (bool)row.Cells["colSelect"].Value == true)
+                DBHelper db = new DBHelper();
+                int studentId = ProgramSession.StudentId;
+                int count = 0;
+
+                foreach (DataGridViewRow row in dgvCourses.Rows)
                 {
-                    string courseId = row.Cells["colCourseID"].Value.ToString();
-
-                    // === التعديل هنا ===
-                    // بدل ما نبعت "First" نبعت 1، وبدل "Second" نبعت 2
-                    int semesterId = (cmbSemester.Text == "Second") ? 2 : 1;
-
-                    // لاحظ شلنا علامات التنصيص '' من حوالين semesterId لأنه بقى رقم
-                    string sql = $@"INSERT INTO Enrollments (StudentID, CourseID, AcademicYear, Semester) 
-                            VALUES ({ProgramSession.StudentId}, {courseId}, '{currentAcademicYear}', {semesterId})";
-
-                    try
+                    // لو الطالب عمل علامة صح
+                    if (Convert.ToBoolean(row.Cells["Select"].Value) == true)
                     {
-                        int result = db.ExecuteNonQuery(sql);
-                        if (result > 0) successCount++;
-                    }
-                    catch (Exception ex)
-                    {
-                        // ممكن تظهر رسالة الخطأ هنا للتوضيح لو حصلت مشكلة تانية
-                        // MessageBox.Show(ex.Message);
+                        string courseId = row.Cells["CourseID"].Value.ToString();
+                        string semester = cmbSemester.Text;
+                        string year = cmbYear.Text;
+
+                        // تأكد إنه مش مسجل المادة دي قبل كده
+                        string checkSql = $"SELECT * FROM Enrollments WHERE StudentID={studentId} AND CourseID={courseId}";
+                        if (db.ExecuteQuery(checkSql).Rows.Count == 0)
+                        {
+                            string insertSql = $@"INSERT INTO Enrollments (StudentID, CourseID, Semester, AcademicYear) 
+                                                  VALUES ({studentId}, {courseId}, '{semester}', {year})";
+                            db.ExecuteNonQuery(insertSql);
+                            count++;
+                        }
                     }
                 }
-            }
 
-            if (successCount > 0)
-            {
-                MessageBox.Show($"Done! Registered {successCount} courses.");
-                this.Close();
+                if (count > 0)
+                    MessageBox.Show($"Successfully registered {count} courses!");
+                else
+                    MessageBox.Show("No new courses selected.");
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("No courses selected.");
+                MessageBox.Show("Error: " + ex.Message);
             }
         }
 
-        // دوال فارغة (عشان الديزاينر ميزعلش لو مربوط بيهم)
-        private void lblSemester_Click(object sender, EventArgs e) { }
-        private void dgvAvailableCourses_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
+        private void dgvAvailableCourses_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
-        //private void lblYear_Click(object sender, EventArgs e)
-        //{
-        //}
+        }
     }
 }

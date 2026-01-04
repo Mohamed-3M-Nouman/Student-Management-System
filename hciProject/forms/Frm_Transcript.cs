@@ -10,35 +10,36 @@ namespace hciProject
         public Frm_Transcript()
         {
             InitializeComponent();
-            LoadTranscriptData();
+            LoadTranscript();
         }
 
-        private void LoadTranscriptData()
+        private void LoadTranscript()
         {
             try
             {
                 DBHelper db = new DBHelper();
                 int studentId = ProgramSession.StudentId;
 
-                // 1. استعلام يجيب اسم المادة، الساعات، والدرجة
-                string sql = $@"SELECT 
-                                    C.CourseName AS [Subject], 
-                                    C.CreditHours AS [Credits],
-                                    E.CourseGrade AS [Score],
-                                    E.Semester
-                                FROM Enrollments E
-                                JOIN Courses C ON E.CourseID = C.CourseID
-                                WHERE E.StudentID = {studentId}";
+                string sql = $@"
+            SELECT 
+                C.CourseID AS 'Code', 
+                C.CourseName AS 'Subject', 
+                E.AcademicYear AS 'Year', 
+                E.Semester AS 'Semester', 
+                C.CreditHours AS 'Credits', 
+                E.CourseGrade AS 'Score'
+            FROM Enrollments E
+            INNER JOIN Courses C ON E.CourseID = C.CourseID
+            WHERE E.StudentID = {studentId} AND E.CourseGrade IS NOT NULL";
 
                 DataTable dt = db.ExecuteQuery(sql);
                 dgvTranscript.DataSource = dt;
 
-                // تنسيق الجدول
+                // === الإضافات الجديدة هنا ===
+                dgvTranscript.ReadOnly = true;              // ممنوع التعديل
+                dgvTranscript.AllowUserToAddRows = false;   // إخفاء السطر الفاضي الأخير
                 dgvTranscript.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dgvTranscript.AllowUserToAddRows = false;
-                dgvTranscript.ReadOnly = true;
 
-                // 2. حساب الـ GPA بالمعادلة الجديدة
                 CalculateGPA(dt);
             }
             catch (Exception ex)
@@ -46,9 +47,8 @@ namespace hciProject
                 MessageBox.Show("Error loading transcript: " + ex.Message);
             }
         }
-
-        // دالة تحويل الدرجة المئوية إلى نقاط (حسب اللائحة اللي بعتها)
-        private double GetGPAPoints(int score)
+        // دالة تحويل الدرجة المئوية إلى نقاط (GPA Points)
+        private double GetGPAPoints(double score)
         {
             if (score >= 96) return 4.00; // A+
             if (score >= 92) return 3.70; // A
@@ -62,45 +62,44 @@ namespace hciProject
             if (score >= 60) return 2.00; // D+
             if (score >= 55) return 1.50; // D
             if (score >= 50) return 1.00; // D-
-            return 0.00;                  // F (أقل من 50)
+            return 0.00;                  // F
         }
 
         private void CalculateGPA(DataTable dt)
         {
-            double totalWeightedPoints = 0; // مجموع (النقاط × الساعات)
-            int totalCreditHours = 0;       // مجموع الساعات الكلية
+            double totalPoints = 0;
+            double totalHours = 0;
 
             foreach (DataRow row in dt.Rows)
             {
-                // نتأكد إن فيه درجة مرصودة
-                if (row["Score"] != DBNull.Value && row["Score"].ToString() != "")
+                // نتأكد إن البيانات مش فاضية
+                if (row["Score"] != DBNull.Value && row["Credits"] != DBNull.Value)
                 {
-                    int score = Convert.ToInt32(row["Score"]);
+                    double score = Convert.ToDouble(row["Score"]);
                     int credits = Convert.ToInt32(row["Credits"]);
 
-                    // 1. حول الدرجة لنقاط (مثلاً 93% بتبقى 3.7)
+                    // نحسب النقاط بناءً على الدالة اللي فوق
                     double points = GetGPAPoints(score);
 
-                    // 2. اضرب النقاط في عدد ساعات المادة واجمعها
-                    totalWeightedPoints += (points * credits);
-
-                    // 3. اجمع عدد الساعات
-                    totalCreditHours += credits;
+                    totalPoints += (points * credits);
+                    totalHours += credits;
                 }
             }
 
-            if (totalCreditHours > 0)
+            if (totalHours > 0)
             {
-                double gpa = totalWeightedPoints / totalCreditHours;
-
+                double gpa = totalPoints / totalHours;
                 lblTotalGPA.Text = "Total GPA: " + gpa.ToString("0.00");
             }
             else
             {
-                lblTotalGPA.Text = "GPA: 0.00";
+                lblTotalGPA.Text = "Total GPA: 0.00";
             }
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            // دالة فارغة لتجنب أخطاء التصميم
+        }
     }
 }
