@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -74,4 +75,60 @@ namespace hciProject.Data
             return result;
         }
     }
+=======
+﻿using System;
+using System.Data;
+using System.Data.SqlClient; 
+using System.Windows.Forms;
+
+namespace hciProject.Data 
+{
+    class DBHelper
+    {
+        private string connectionString = @"Data Source=3MNo3man;Initial Catalog=StudentSystemDB;Integrated Security=True;TrustServerCertificate=True";
+
+        SqlConnection con;
+
+        public DBHelper()
+        {
+            con = new SqlConnection(connectionString);
+        }
+
+    
+        public DataTable ExecuteQuery(string queryText)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                SqlDataAdapter da = new SqlDataAdapter(queryText, con);
+                da.Fill(dt);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطأ في الاتصال: " + ex.Message);
+            }
+            return dt;
+        }
+
+        public int ExecuteNonQuery(string queryText)
+        {
+            int rowsAffected = 0;
+            try
+            {
+                if (con.State == ConnectionState.Closed) con.Open();
+
+                SqlCommand cmd = new SqlCommand(queryText, con);
+                rowsAffected = cmd.ExecuteNonQuery();
+
+                con.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطأ في التنفيذ: " + ex.Message);
+                con.Close();
+            }
+            return rowsAffected;
+        }
+    }
+>>>>>>> fbe70bcb48a49a963399dc4b53bdd4a819027a3a
 }
