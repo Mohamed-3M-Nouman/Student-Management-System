@@ -1,3 +1,125 @@
+<<<<<<< HEAD
+﻿using System;
+using System.Data;
+using System.Windows.Forms;
+using hciProject.Data;
+
+namespace hciProject
+{
+    public partial class Frm_ManageStudents : Form
+    {
+        public Frm_ManageStudents()
+        {
+            InitializeComponent();
+            LoadStudents();
+        }
+
+        private void LoadStudents()
+        {
+            try
+            {
+                DBHelper db = new DBHelper();
+                string sql = @"
+            SELECT 
+                StudentID, 
+                FullName, 
+                Phone, 
+                Address, 
+                Department, 
+                CurrentLevel 
+            FROM Students";
+
+                DataTable dt = db.ExecuteQuery(sql);
+                dgvStudents.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }    
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            Frm_AddEditStudent f = new Frm_AddEditStudent(0);
+            f.ShowDialog();
+            LoadStudents(); 
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if (dgvStudents.SelectedRows.Count > 0)
+            {
+                int studentId = Convert.ToInt32(dgvStudents.SelectedRows[0].Cells["StudentID"].Value);
+
+                Frm_AddEditStudent f = new Frm_AddEditStudent(studentId);
+                f.ShowDialog();
+
+                LoadStudents(); 
+            }
+            else
+            {
+                MessageBox.Show("Please select a student first.");
+            }
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (dgvStudents.SelectedRows.Count > 0)
+            {
+                if (MessageBox.Show("Are you sure you want to delete this student?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    try
+                    {
+                        int studentId = Convert.ToInt32(dgvStudents.SelectedRows[0].Cells["StudentID"].Value);
+                        DBHelper db = new DBHelper();
+
+                        db.ExecuteNonQuery($"DELETE FROM Users WHERE LinkedStudentID = {studentId}");
+                        db.ExecuteNonQuery($"DELETE FROM Enrollments WHERE StudentID = {studentId}");
+                        db.ExecuteNonQuery($"DELETE FROM Students WHERE StudentID = {studentId}");
+
+                        MessageBox.Show("Deleted Successfully.");
+                        LoadStudents();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error deleting: " + ex.Message);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a student first.");
+            }
+        }
+
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DBHelper db = new DBHelper();
+                string searchText = txtSearch.Text.Trim(); 
+
+                if (string.IsNullOrEmpty(searchText))
+                {
+                    LoadStudents();
+                    return;
+                }
+
+                string sql = $@"SELECT S.StudentID, S.FullName, S.Department, S.CurrentLevel, U.Username 
+                        FROM Students S 
+                        LEFT JOIN Users U ON U.LinkedStudentID = S.StudentID
+                        WHERE S.FullName LIKE '%{searchText}%' 
+                           OR U.Username LIKE '%{searchText}%'";
+
+                DataTable dt = db.ExecuteQuery(sql);
+                dgvStudents.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error searching: " + ex.Message);
+            }
+        }
+    }
+=======
 ﻿using System;
 using System.Data;
 using System.Windows.Forms;
@@ -115,4 +237,5 @@ namespace hciProject
             }
         }
     }
+>>>>>>> fbe70bcb48a49a963399dc4b53bdd4a819027a3a
 }
