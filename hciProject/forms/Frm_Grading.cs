@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Windows.Forms;
-using hciProject.Data; // عشان يشوف DBHelper
+using hciProject.Data;
 
 namespace hciProject
 {
@@ -11,42 +11,35 @@ namespace hciProject
         {
             InitializeComponent();
 
-            // هنجبر الدوال دي تشتغل هنا يدوياً بدل ما نعتمد على الـ Load Event
             SetupDataGridView();
             LoadStudentsCombo();
         }
 
-        // 1. أول ما الصفحة تحمل، نجهز الجدول ونملأ قائمة الطلاب
         private void Frm_Grading_Load(object sender, EventArgs e)
         {
             SetupDataGridView();
-            LoadStudentsCombo(); // دالة جديدة لملء الطلاب من الداتا بيز
+            LoadStudentsCombo(); 
         }
 
         private void SetupDataGridView()
         {
-            // هنخلي الجدول فاضي في الأول ومجهز
             dgvStudentCourses.Columns.Clear();
             dgvStudentCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvStudentCourses.AllowUserToAddRows = false;
         }
 
-        // 2. دالة لجلب أسماء الطلاب من الداتا بيز
         private void LoadStudentsCombo()
         {
             try
             {
                 DBHelper db = new DBHelper();
-                // بنجيب الاسم والـ ID عشان لما نختار الاسم نعرف هو مين بالظبط
                 string sql = "SELECT StudentID, FullName FROM Students";
                 DataTable dt = db.ExecuteQuery(sql);
                        
-                // ربط الكومبو بوكس بالداتا
                 cmbSelectStudent.DataSource = dt;
-                cmbSelectStudent.DisplayMember = "FullName"; // اللي هيظهر
-                cmbSelectStudent.ValueMember = "StudentID";  // القيمة المخفية
+                cmbSelectStudent.DisplayMember = "FullName";
+                cmbSelectStudent.ValueMember = "StudentID"; 
 
-                // نخلي الاختيار فاضي في الأول
                 cmbSelectStudent.SelectedIndex = -1;
             }
             catch (Exception ex)
@@ -55,14 +48,11 @@ namespace hciProject
             }
         }
 
-        // 3. لما نختار طالب، نعرض المواد اللي هو مسجلها
         private void cmbSelectStudent_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // لو مفيش حاجة مختارة أو الاختيار مش رقم، اخرج
             if (cmbSelectStudent.SelectedIndex == -1 || cmbSelectStudent.SelectedValue == null)
                 return;
 
-            // حماية عشان أول ما الفورم بتفتح الحدث ده بيشتغل لوحده
             int studentId;
             bool isNumber = int.TryParse(cmbSelectStudent.SelectedValue.ToString(), out studentId);
             if (!isNumber) return;
@@ -74,8 +64,6 @@ namespace hciProject
         {
             DBHelper db = new DBHelper();
 
-            // جملة ذكية: بتجيب اسم المادة والدرجة الحالية، ورقم المادة (مخفي)
-            // بنعمل JOIN بين جدول التسجيل (Enrollments) وجدول المواد (Courses)
             string sql = $@"SELECT 
                                 C.CourseID, 
                                 C.CourseName, 
@@ -87,13 +75,12 @@ namespace hciProject
             DataTable dt = db.ExecuteQuery(sql);
             dgvStudentCourses.DataSource = dt;
 
-            // تظبيط شكل الجدول
             if (dgvStudentCourses.Columns.Contains("CourseID"))
-                dgvStudentCourses.Columns["CourseID"].Visible = false; // نخفي الـ ID
+                dgvStudentCourses.Columns["CourseID"].Visible = false;
 
             if (dgvStudentCourses.Columns.Contains("CourseName"))
             {
-                dgvStudentCourses.Columns["CourseName"].ReadOnly = true; // نمنع تغيير اسم المادة
+                dgvStudentCourses.Columns["CourseName"].ReadOnly = true; 
                 dgvStudentCourses.Columns["CourseName"].HeaderText = "Subject";
             }
 
@@ -101,7 +88,6 @@ namespace hciProject
                 dgvStudentCourses.Columns["CourseGrade"].HeaderText = "Grade (Enter here)";
         }
 
-        // 4. زرار حفظ الدرجات
         private void btnSaveGrades_Click(object sender, EventArgs e)
         {
             if (cmbSelectStudent.SelectedValue == null) return;
@@ -110,23 +96,19 @@ namespace hciProject
             DBHelper db = new DBHelper();
             int count = 0;
 
-            // نلف على سطر سطر في الجدول
             foreach (DataGridViewRow row in dgvStudentCourses.Rows)
             {
-                // نتأكد إن السطر فيه بيانات
                 if (row.Cells["CourseID"].Value != null)
                 {
                     string courseId = row.Cells["CourseID"].Value.ToString();
-                    string gradeValue = "NULL"; // القيمة الافتراضية
+                    string gradeValue = "NULL"; 
 
-                    // لو الأدمن كتب درجة، نستخدمها
                     if (row.Cells["CourseGrade"].Value != null &&
                         !string.IsNullOrWhiteSpace(row.Cells["CourseGrade"].Value.ToString()))
                     {
                         gradeValue = row.Cells["CourseGrade"].Value.ToString();
                     }
 
-                    // تحديث الدرجة في الداتا بيز
                     string sql = $@"UPDATE Enrollments 
                                     SET CourseGrade = {gradeValue} 
                                     WHERE StudentID = {studentId} AND CourseID = {courseId}";

@@ -15,36 +15,44 @@ namespace hciProject
 
         private void LoadStudents()
         {
-            DBHelper db = new DBHelper();
-            string sql = @"SELECT S.StudentID, S.FullName, S.Department, S.CurrentLevel, U.Username 
-                           FROM Students S 
-                           LEFT JOIN Users U ON U.LinkedStudentID = S.StudentID";
+            try
+            {
+                DBHelper db = new DBHelper();
+                string sql = @"
+            SELECT 
+                StudentID, 
+                FullName, 
+                Phone, 
+                Address, 
+                Department, 
+                CurrentLevel 
+            FROM Students";
 
-            dgvStudents.DataSource = db.ExecuteQuery(sql);
-            dgvStudents.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        }
-
-        // زر إضافة (بيفتح الشاشة بـ ID = 0)
+                DataTable dt = db.ExecuteQuery(sql);
+                dgvStudents.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }    
         private void btnAdd_Click(object sender, EventArgs e)
         {
             Frm_AddEditStudent f = new Frm_AddEditStudent(0);
             f.ShowDialog();
-            LoadStudents(); // تحديث الجدول بعد ما يرجع
+            LoadStudents(); 
         }
 
-        // زر تعديل (بيفتح الشاشة بـ ID الطالب المختار)
         private void btnEdit_Click(object sender, EventArgs e)
         {
             if (dgvStudents.SelectedRows.Count > 0)
             {
-                // نجيب رقم الطالب من الجدول
                 int studentId = Convert.ToInt32(dgvStudents.SelectedRows[0].Cells["StudentID"].Value);
 
-                // نبعته للشاشة
                 Frm_AddEditStudent f = new Frm_AddEditStudent(studentId);
                 f.ShowDialog();
 
-                LoadStudents(); // تحديث بعد التعديل
+                LoadStudents(); 
             }
             else
             {
@@ -52,7 +60,6 @@ namespace hciProject
             }
         }
 
-        // زر حذف
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (dgvStudents.SelectedRows.Count > 0)
@@ -64,12 +71,8 @@ namespace hciProject
                         int studentId = Convert.ToInt32(dgvStudents.SelectedRows[0].Cells["StudentID"].Value);
                         DBHelper db = new DBHelper();
 
-                        // لازم نمسح بالترتيب عشان العلاقات (Foreign Keys)
-                        // 1. نمسح اليوزر
                         db.ExecuteNonQuery($"DELETE FROM Users WHERE LinkedStudentID = {studentId}");
-                        // 2. نمسح درجاته وتسجيلاته
                         db.ExecuteNonQuery($"DELETE FROM Enrollments WHERE StudentID = {studentId}");
-                        // 3. نمسح الطالب نفسه
                         db.ExecuteNonQuery($"DELETE FROM Students WHERE StudentID = {studentId}");
 
                         MessageBox.Show("Deleted Successfully.");
@@ -92,7 +95,7 @@ namespace hciProject
             try
             {
                 DBHelper db = new DBHelper();
-                string searchText = txtSearch.Text.Trim(); // النص اللي كتبته
+                string searchText = txtSearch.Text.Trim(); 
 
                 if (string.IsNullOrEmpty(searchText))
                 {

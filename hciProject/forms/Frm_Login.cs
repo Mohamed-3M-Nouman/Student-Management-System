@@ -14,66 +14,35 @@ namespace hciProject
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtUser.Text) || string.IsNullOrEmpty(txtPass.Text))
-            {
-                MessageBox.Show("من فضلك ادخل اسم المستخدم وكلمة السر");
-                return;
-            }
+            DBHelper db = new DBHelper();
+            string sql = $"SELECT * FROM Users WHERE Username = '{txtUser.Text.Trim()}' AND PasswordHash = '{txtPass.Text.Trim()}'";
 
-            try
+            DataTable dt = db.ExecuteQuery(sql);
+            if (dt.Rows.Count > 0)
             {
-                DBHelper db = new DBHelper();
-                // 1. الاستعلام الأول: هل المستخدم موجود في جدول Users؟
-                string sql = $"SELECT * FROM Users WHERE Username = '{txtUser.Text}' AND PasswordHash = '{txtPass.Text}'";
-                DataTable dtUser = db.ExecuteQuery(sql);
+                ProgramSession.UserId = int.Parse(dt.Rows[0]["UserID"].ToString());
+                ProgramSession.UserRole = dt.Rows[0]["Role"].ToString();
 
-                if (dtUser.Rows.Count > 0)
+                if (dt.Rows[0]["LinkedStudentID"] != DBNull.Value)
                 {
-                    // المستخدم موجود.. تعال نسجل بياناته في السيشن
-                    ProgramSession.UserId = Convert.ToInt32(dtUser.Rows[0]["UserID"]);
-                    ProgramSession.Role = dtUser.Rows[0]["Role"].ToString();
+                    ProgramSession.StudentId = int.Parse(dt.Rows[0]["LinkedStudentID"].ToString());
+                }
 
-                    if (ProgramSession.Role == "Student")
-                    {
-                        // === هنا الحل بتاعك ===
-
-                        // أ) جبنا رقم الطالب من جدول اليوزرز
-                        int linkedId = Convert.ToInt32(dtUser.Rows[0]["LinkedStudentID"]);
-                        ProgramSession.StudentId = linkedId;
-
-                        // ب) نعمل استعلام تاني سريع يروح جدول Students يجيب الاسم
-                        string nameQuery = $"SELECT FullName FROM Students WHERE StudentID = {linkedId}";
-                        DataTable dtStudent = db.ExecuteQuery(nameQuery);
-
-                        if (dtStudent.Rows.Count > 0)
-                        {
-                            // ج) تخزين الاسم الحقيقي في السيشن
-                            ProgramSession.StudentName = dtStudent.Rows[0]["FullName"].ToString();
-                        }
-
-                        // د) فتح الفورم (لاحظ الأقواس فاضية لأننا خنا الاسم في السيشن خلاص)
-                        Frm_StudentDashboard frm = new Frm_StudentDashboard();
-                        frm.Show();
-                    }
-                    else // Admin
-                    {
-                        Frm_AdminDashboard frm = new Frm_AdminDashboard();
-                        frm.Show();
-                    }
-
-                    this.Hide();
+                if (ProgramSession.UserRole == "Admin")
+                {
+                    new Frm_AdminDashboard().Show();
                 }
                 else
                 {
-                    MessageBox.Show("بيانات الدخول غير صحيحة");
+                    new Frm_StudentDashboard().Show();
                 }
+                this.Hide();
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show("حدث خطأ أثناء محاولة تسجيل الدخول: " + ex.Message);
+                MessageBox.Show("Invalid Username or Password");
             }
         }
-
         private void btnExit_Click(object sender, EventArgs e)
         {
             Application.Exit();

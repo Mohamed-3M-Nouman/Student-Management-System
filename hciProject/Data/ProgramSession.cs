@@ -13,6 +13,7 @@ namespace hciProject.Data
         public static string Username { get; set; }
         public static string Role { get; set; } 
         public static int StudentId { get; set; } 
-        public static string StudentName { get; set; } // <-- Add this property
+        public static string StudentName { get; set; }
+        public static string UserRole { get; set; } 
     }
 }
